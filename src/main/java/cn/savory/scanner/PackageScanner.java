@@ -54,24 +54,32 @@ public class PackageScanner {
         // If the web server unzips the jar file, then the classes will exist in the form of
         // normal file in the directory.
         // If the web server does not unzip the jar file, then classes will exist in jar file.
-        List<String> names; // contains the name of the class file. e.g., Apple.class will be stored as "Apple"
-        if (isJarFile(file.getName())) {
-            // jar file
-            names = readFromJarFile(file, splashPath);
-        } else {
-            // directory
-            names = readFromDirectory(file, splashPath);
-        }
+        // contains the name of the class file. e.g., Apple.class will be stored as "Apple"
 
-        for (String name : names) {
-            if (isClassFile(name)) {
-                name = StringUtil.trimExtension(name);
-                name = StringUtil.splashToDot(name);
-                classNames.add(name);
-            }
-        }
+        // directory
+        List<String> namesFromDirectory = readFromDirectory(file, splashPath);
+
+        // jar file
+        List<String> namesFromJar = readFromJarFile(file, splashPath);
+
+        addTo(classNames, namesFromDirectory);
+
+        addTo(classNames, namesFromJar);
 
         return classNames;
+    }
+
+    private void addTo(List<String> classNames, List<String> namesFromJar) {
+
+        for (String name : namesFromJar) {
+            if (!isClassFile(name)) {
+                continue;
+            }
+
+            name = StringUtil.trimExtension(name);
+            name = StringUtil.splashToDot(name);
+            classNames.add(name);
+        }
     }
 
     private List<String> readFromJarFile(File file, String splashedPackageName) throws IOException {
